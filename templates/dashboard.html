@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - ProductivityOptimizer{% endblock %}
+
+{% block content %}
+<h1>Weekly Dashboard</h1>
+<p class="subtitle">Your productivity summary for this week</p>
+
+<div class="card-grid">
+    <div class="card stat-card">
+        <div class="stat-value">{{ week_stats.pomodoros }}</div>
+        <div class="stat-label">Pomodoros Completed</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-value">{{ week_stats.minutes }}</div>
+        <div class="stat-label">Focus Minutes</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-value">{{ week_stats.tasks }}</div>
+        <div class="stat-label">Tasks Completed</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-value">{{ active_tasks }}</div>
+        <div class="stat-label">Active Tasks</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Daily Focus Minutes</h2>
+    <div class="bar-chart">
+        {% for d in daily %}
+        <div class="bar-col">
+            <div class="bar-value">{{ d.minutes }}</div>
+            <div class="bar" style="height: {{ (d.minutes / max_minutes * 100) | int }}px;{% if d.minutes == 0 %} background: #30363d;{% endif %}"></div>
+            <div class="bar-label">{{ d.date }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if latest_quiz %}
+<div class="card mt-12">
+    <h2>Latest Workspace Score</h2>
+    <div class="flex flex-between flex-center mt-12">
+        <div>
+            <span style="font-size: 24px; font-weight: 700; color: {% if latest_quiz.total_score / latest_quiz.max_score >= 0.8 %}#238636{% elif latest_quiz.total_score / latest_quiz.max_score >= 0.6 %}#d29922{% else %}#da3633{% endif %};">
+                {{ latest_quiz.total_score }}/{{ latest_quiz.max_score }}
+            </span>
+            <span class="text-muted text-sm"> ({{ (latest_quiz.total_score / latest_quiz.max_score * 100) | round | int }}%)</span>
+        </div>
+        <a href="{{ url_for('quiz') }}" class="btn btn-sm">Retake Quiz</a>
+    </div>
+    <div style="margin-top: 8px; background: #30363d; border-radius: 4px; height: 8px; overflow: hidden;">
+        <div style="width: {{ (latest_quiz.total_score / latest_quiz.max_score * 100) | int }}%; height: 100%; background: {% if latest_quiz.total_score / latest_quiz.max_score >= 0.8 %}#238636{% elif latest_quiz.total_score / latest_quiz.max_score >= 0.6 %}#d29922{% else %}#da3633{% endif %}; border-radius: 4px;"></div>
+    </div>
+    <p class="text-muted text-sm mt-12">Taken: {{ latest_quiz.created_at }}</p>
+</div>
+{% else %}
+<div class="card mt-12">
+    <h2>Workspace Assessment</h2>
+    <p class="text-muted mt-12">Take the workspace quiz to get personalized optimization tips.</p>
+    <a href="{{ url_for('quiz') }}" class="btn btn-primary mt-12" style="margin-top: 12px; display: inline-block;">Take Quiz ({{ quiz_count }} questions)</a>
+</div>
+{% endif %}
+
+<div class="card mt-12">
+    <h2>Quick Actions</h2>
+    <div class="flex gap-8 mt-12" style="flex-wrap: wrap;">
+        <a href="{{ url_for('timer') }}" class="btn btn-primary">Start Focus Session</a>
+        <a href="{{ url_for('tasks') }}" class="btn">Manage Tasks</a>
+        <a href="{{ url_for('quiz') }}" class="btn">Workspace Quiz</a>
+    </div>
+</div>
+{% endblock %}

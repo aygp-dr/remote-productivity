@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Your Results - ProductivityOptimizer{% endblock %}
+
+{% block content %}
+<h1>Your Workspace Results</h1>
+<p class="subtitle">Personalized tips based on your assessment</p>
+
+<div class="card" style="text-align: center; padding: 24px;">
+    <div style="font-size: 48px; font-weight: 700; color: {% if percentage >= 80 %}#238636{% elif percentage >= 60 %}#d29922{% else %}#da3633{% endif %};">
+        {{ percentage }}%
+    </div>
+    <p class="text-muted">Overall Score: {{ total_score }} / {{ max_score }}</p>
+    <div style="margin-top: 12px; background: #30363d; border-radius: 4px; height: 10px; overflow: hidden;">
+        <div style="width: {{ percentage }}%; height: 100%; background: {% if percentage >= 80 %}#238636{% elif percentage >= 60 %}#d29922{% else %}#da3633{% endif %}; border-radius: 4px; transition: width 0.5s;"></div>
+    </div>
+    <p class="text-muted text-sm" style="margin-top: 12px;">
+        {% if percentage >= 80 %}
+            Excellent workspace setup! Focus on maintaining your strengths.
+        {% elif percentage >= 60 %}
+            Good foundation with room for improvement. Check the tips below.
+        {% elif percentage >= 40 %}
+            Several areas need attention. Start with the lowest-scoring categories.
+        {% else %}
+            Significant improvements needed. Tackle the top priorities below for quick wins.
+        {% endif %}
+    </p>
+</div>
+
+<h2 class="mt-24" style="margin-bottom: 16px;">Personalized Tips (prioritized by impact)</h2>
+
+{% for tip in tips %}
+<div class="card">
+    <div class="flex flex-between flex-center mb-12">
+        <strong>{{ tip.category }}</strong>
+        <span class="badge {% if tip.score <= 2 %}badge-high{% elif tip.score == 3 %}badge-medium{% else %}badge-low{% endif %}">
+            {{ tip.score }}/5
+        </span>
+    </div>
+    <p class="text-muted text-sm" style="margin-bottom: 8px;">{{ tip.question }}</p>
+    <p style="line-height: 1.6;">{{ tip.tip }}</p>
+</div>
+{% endfor %}
+
+<div class="flex gap-8 mt-24" style="flex-wrap: wrap;">
+    <a href="{{ url_for('quiz') }}" class="btn btn-primary">Retake Quiz</a>
+    <a href="{{ url_for('dashboard') }}" class="btn">Back to Dashboard</a>
+</div>
+{% endblock %}

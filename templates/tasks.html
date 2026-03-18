@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Tasks - ProductivityOptimizer{% endblock %}
+
+{% block content %}
+<h1>Task List</h1>
+<p class="subtitle">Manage your tasks by priority</p>
+
+<div class="card">
+    <form method="POST" class="flex gap-8" style="flex-wrap: wrap; align-items: flex-end;">
+        <div style="flex: 1; min-width: 200px;">
+            <input name="title" placeholder="Add a new task..." required style="width: 100%;">
+        </div>
+        <div>
+            <select name="priority">
+                <option value="high">High</option>
+                <option value="medium" selected>Medium</option>
+                <option value="low">Low</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+    </form>
+</div>
+
+<div class="flex gap-8 mb-12" style="flex-wrap: wrap;">
+    <a href="{{ url_for('tasks') }}" class="btn btn-sm{% if priority_filter == 'all' %} btn-primary{% endif %}">All</a>
+    <a href="{{ url_for('tasks', priority='high') }}" class="btn btn-sm{% if priority_filter == 'high' %} btn-primary{% endif %}">High</a>
+    <a href="{{ url_for('tasks', priority='medium') }}" class="btn btn-sm{% if priority_filter == 'medium' %} btn-primary{% endif %}">Medium</a>
+    <a href="{{ url_for('tasks', priority='low') }}" class="btn btn-sm{% if priority_filter == 'low' %} btn-primary{% endif %}">Low</a>
+</div>
+
+{% if active_tasks %}
+{% for task in active_tasks %}
+<div class="card flex flex-between flex-center">
+    <div>
+        <span class="badge badge-{{ task.priority }}">{{ task.priority }}</span>
+        <strong style="margin-left: 8px;">{{ task.title }}</strong>
+        <span class="text-muted text-sm" style="margin-left: 8px;">{{ task.created_at }}</span>
+    </div>
+    <div class="flex gap-8">
+        <form method="POST" action="{{ url_for('complete_task', task_id=task.id) }}" style="margin: 0;">
+            <button type="submit" class="btn btn-sm btn-primary">Done</button>
+        </form>
+        <form method="POST" action="{{ url_for('delete_task', task_id=task.id) }}" style="margin: 0;">
+            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="card" style="text-align: center;">
+    <p class="text-muted">No active tasks{% if priority_filter != 'all' %} with {{ priority_filter }} priority{% endif %}. Add one above!</p>
+</div>
+{% endif %}
+
+{% if completed_tasks %}
+<h2 class="mt-24">Recently Completed</h2>
+{% for task in completed_tasks %}
+<div class="card" style="opacity: 0.6;">
+    <span class="badge badge-{{ task.priority }}">{{ task.priority }}</span>
+    <span style="margin-left: 8px; text-decoration: line-through;">{{ task.title }}</span>
+    <span class="text-muted text-sm" style="margin-left: 8px;">completed {{ task.completed_at }}</span>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

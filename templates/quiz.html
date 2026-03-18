@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Workspace Assessment - ProductivityOptimizer{% endblock %}
+
+{% block extra_css %}
+.quiz-question { counter-increment: question; }
+.quiz-question::before { content: counter(question) ". "; color: #58a6ff; font-weight: 600; }
+.quiz-options { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.quiz-option { flex: 1; min-width: 100px; }
+.quiz-option input { display: none; }
+.quiz-option label {
+    display: block; text-align: center; padding: 10px 8px; border: 1px solid #30363d;
+    border-radius: 6px; cursor: pointer; font-size: 12px; color: #8b949e; transition: all 0.15s;
+}
+.quiz-option input:checked + label { border-color: #58a6ff; background: rgba(88,166,255,0.1); color: #c9d1d9; }
+.quiz-option label:hover { border-color: #8b949e; }
+.quiz-form { counter-reset: question; }
+{% endblock %}
+
+{% block content %}
+<h1>Workspace Assessment</h1>
+<p class="subtitle">Answer 10 questions about your home office setup to get personalized optimization tips</p>
+
+<form method="POST" class="quiz-form">
+    {% for q in questions %}
+    <div class="card quiz-question">
+        <p style="font-size: 15px; font-weight: 500; color: #f0f6fc;">{{ q.text }}</p>
+        <div class="quiz-options">
+            {% for i in range(5) %}
+            <div class="quiz-option">
+                <input type="radio" name="{{ q.id }}" id="{{ q.id }}_{{ i+1 }}" value="{{ i+1 }}" {% if i == 2 %}checked{% endif %}>
+                <label for="{{ q.id }}_{{ i+1 }}">
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">{{ i+1 }}</div>
+                    {{ q.labels[i] }}
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 8px;">
+        Get Your Personalized Tips
+    </button>
+</form>
+{% endblock %}

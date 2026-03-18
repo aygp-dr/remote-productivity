@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}RemoteProductivityOptimizer{% endblock %}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        nav { background: #161b22; border-bottom: 1px solid #30363d; padding: 12px 20px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+        nav .logo { color: #58a6ff; font-weight: 700; font-size: 18px; }
+        nav .links { display: flex; gap: 8px; }
+        nav .links a { color: #8b949e; font-size: 14px; padding: 6px 12px; border-radius: 6px; }
+        nav .links a:hover, nav .links a.active { color: #c9d1d9; background: #21262d; text-decoration: none; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+        h1 { color: #f0f6fc; font-size: 24px; margin-bottom: 4px; }
+        h2 { color: #f0f6fc; font-size: 18px; margin-bottom: 12px; }
+        .subtitle { color: #8b949e; margin-bottom: 24px; font-size: 14px; }
+
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+        .stat-card { text-align: center; }
+        .stat-value { font-size: 32px; font-weight: 700; color: #58a6ff; }
+        .stat-label { font-size: 12px; color: #8b949e; margin-top: 4px; }
+
+        .btn { display: inline-block; padding: 8px 16px; border: 1px solid #30363d; background: #21262d; color: #c9d1d9; border-radius: 6px; cursor: pointer; font-size: 14px; font-family: inherit; }
+        .btn:hover { background: #30363d; text-decoration: none; }
+        .btn-primary { background: #238636; border-color: #2ea043; color: #fff; }
+        .btn-primary:hover { background: #2ea043; }
+        .btn-danger { background: #da3633; border-color: #f85149; color: #fff; }
+        .btn-danger:hover { background: #f85149; }
+        .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+        input, select, textarea { background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; font-size: 14px; font-family: inherit; }
+        input:focus, select:focus { outline: none; border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88,166,255,0.1); }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-high { background: #da3633; color: #fff; }
+        .badge-medium { background: #d29922; color: #fff; }
+        .badge-low { background: #238636; color: #fff; }
+
+        .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding: 8px 0; }
+        .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .bar { width: 100%; background: #238636; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; }
+        .bar-label { font-size: 11px; color: #8b949e; }
+        .bar-value { font-size: 11px; color: #c9d1d9; }
+
+        .flex { display: flex; }
+        .flex-between { justify-content: space-between; }
+        .flex-center { align-items: center; }
+        .gap-8 { gap: 8px; }
+        .gap-12 { gap: 12px; }
+        .mt-12 { margin-top: 12px; }
+        .mt-24 { margin-top: 24px; }
+        .mb-12 { margin-bottom: 12px; }
+        .text-muted { color: #8b949e; }
+        .text-sm { font-size: 13px; }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    <nav>
+        <span class="logo">ProductivityOptimizer</span>
+        <div class="links">
+            <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{{ url_for('timer') }}" class="{% if request.endpoint == 'timer' %}active{% endif %}">Focus Timer</a>
+            <a href="{{ url_for('tasks') }}" class="{% if request.endpoint == 'tasks' %}active{% endif %}">Tasks</a>
+            <a href="{{ url_for('quiz') }}" class="{% if request.endpoint == 'quiz' %}active{% endif %}">Workspace Quiz</a>
+        </div>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

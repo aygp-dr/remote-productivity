@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Focus Timer - ProductivityOptimizer{% endblock %}
+
+{% block extra_css %}
+.timer-display {
+    font-size: 72px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: #f0f6fc;
+    margin: 24px 0;
+    letter-spacing: 2px;
+}
+.timer-modes { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; }
+.timer-modes button { padding: 8px 16px; border: 1px solid #30363d; background: #21262d; color: #8b949e; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit; }
+.timer-modes button.active { background: #238636; border-color: #2ea043; color: #fff; }
+.timer-controls { display: flex; gap: 12px; justify-content: center; }
+.timer-controls button { padding: 12px 32px; font-size: 16px; font-family: inherit; }
+.today-stats { display: flex; gap: 24px; justify-content: center; margin-top: 24px; }
+.today-stat { text-align: center; }
+.today-stat-val { font-size: 20px; font-weight: 600; color: #58a6ff; }
+.today-stat-lbl { font-size: 12px; color: #8b949e; }
+{% endblock %}
+
+{% block content %}
+<h1>Focus Timer</h1>
+<p class="subtitle">Stay focused with timed work sessions</p>
+
+<div class="card" style="text-align: center; padding: 32px;">
+    <div class="timer-modes">
+        <button class="active" data-mode="focus" data-minutes="25">Focus (25m)</button>
+        <button data-mode="short_break" data-minutes="5">Short Break (5m)</button>
+        <button data-mode="long_break" data-minutes="15">Long Break (15m)</button>
+    </div>
+
+    <div class="timer-display" id="timer-display">25:00</div>
+
+    <div class="timer-controls">
+        <button class="btn btn-primary" id="btn-start">Start</button>
+        <button class="btn" id="btn-pause" style="display:none;">Pause</button>
+        <button class="btn" id="btn-reset">Reset</button>
+    </div>
+
+    <div class="today-stats">
+        <div class="today-stat">
+            <div class="today-stat-val" id="today-pomodoros">{{ today_pomodoros }}</div>
+            <div class="today-stat-lbl">Pomodoros Today</div>
+        </div>
+        <div class="today-stat">
+            <div class="today-stat-val" id="today-minutes">{{ today_minutes }}</div>
+            <div class="today-stat-lbl">Focus Minutes</div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-12">
+    <h2>How to use the Pomodoro Technique</h2>
+    <ol style="margin-left: 20px; margin-top: 8px; line-height: 1.8; color: #8b949e;">
+        <li>Choose a task to focus on</li>
+        <li>Start a 25-minute focus session</li>
+        <li>Work on the task until the timer rings</li>
+        <li>Take a 5-minute short break</li>
+        <li>After 4 pomodoros, take a 15-minute long break</li>
+    </ol>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    let totalSeconds = 25 * 60;
+    let remaining = totalSeconds;
+    let interval = null;
+    let running = false;
+    let currentMode = 'focus';
+    let currentMinutes = 25;
+
+    const display = document.getElementById('timer-display');
+    const btnStart = document.getElementById('btn-start');
+    const btnPause = document.getElementById('btn-pause');
+    const btnReset = document.getElementById('btn-reset');
+    const modeButtons = document.querySelectorAll('.timer-modes button');
+
+    function formatTime(s) {
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+    }
+
+    function updateDisplay() {
+        display.textContent = formatTime(remaining);
+        document.title = formatTime(remaining) + ' - Focus Timer';
+    }
+
+    function tick() {
+        if (remaining <= 0) {
+            clearInterval(interval);
+            interval = null;
+            running = false;
+            btnStart.style.display = '';
+            btnPause.style.display = 'none';
+            btnStart.textContent = 'Start';
+            onComplete();
+            return;
+        }
+        remaining--;
+        updateDisplay();
+    }
+
+    function onComplete() {
+        // Play notification sound
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            [0, 0.2, 0.4].forEach(function(t) {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 800;
+                gain.gain.value = 0.3;
+                osc.start(ctx.currentTime + t);
+                osc.stop(ctx.currentTime + t + 0.15);
+            });
+        } catch(e) {}
+
+        // Record completed session
+        fetch('/api/timer/complete', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({duration: currentMinutes, type: currentMode})
+        }).then(function(r) { return r.json(); }).then(function() {
+            if (currentMode === 'focus') {
+                const pomEl = document.getElementById('today-pomodoros');
+                const minEl = document.getElementById('today-minutes');
+                pomEl.textContent = parseInt(pomEl.textContent) + 1;
+                minEl.textContent = parseInt(minEl.textContent) + currentMinutes;
+            }
+        });
+
+        display.textContent = 'Done!';
+        document.title = 'Done! - Focus Timer';
+    }
+
+    btnStart.addEventListener('click', function() {
+        if (!running) {
+            if (remaining <= 0) {
+                remaining = totalSeconds;
+                updateDisplay();
+            }
+            interval = setInterval(tick, 1000);
+            running = true;
+            btnStart.style.display = 'none';
+            btnPause.style.display = '';
+        }
+    });
+
+    btnPause.addEventListener('click', function() {
+        clearInterval(interval);
+        interval = null;
+        running = false;
+        btnStart.style.display = '';
+        btnPause.style.display = 'none';
+        btnStart.textContent = 'Resume';
+    });
+
+    btnReset.addEventListener('click', function() {
+        clearInterval(interval);
+        interval = null;
+        running = false;
+        remaining = totalSeconds;
+        updateDisplay();
+        btnStart.style.display = '';
+        btnPause.style.display = 'none';
+        btnStart.textContent = 'Start';
+    });
+
+    modeButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            modeButtons.forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            currentMode = btn.dataset.mode;
+            currentMinutes = parseInt(btn.dataset.minutes);
+            totalSeconds = currentMinutes * 60;
+            clearInterval(interval);
+            interval = null;
+            running = false;
+            remaining = totalSeconds;
+            updateDisplay();
+            btnStart.style.display = '';
+            btnPause.style.display = 'none';
+            btnStart.textContent = 'Start';
+        });
+    });
+
+    updateDisplay();
+})();
+</script>
+{% endblock %}
