@@ -172,9 +172,9 @@ class TestQuiz:
         data = {q["id"]: "2" for q in QUIZ_QUESTIONS}
         resp = client.post("/quiz", data=data)
         assert resp.status_code == 200
-        # Should contain tips text
+        # Should contain tips text (HTML-escaped)
         for q in QUIZ_QUESTIONS:
-            assert q["tips"][2].encode() in resp.data
+            assert str(escape(q["tips"][2])).encode() in resp.data
 
     def test_quiz_saved_to_db(self, client):
         data = {q["id"]: "4" for q in QUIZ_QUESTIONS}
